@@ -16,36 +16,47 @@ export const AddComments = () =>{
     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     var dateTime = date+' '+time;
-    const temp = [...comments]
+    const temp = [...comments];
     temp.unshift({"Comments":focusPoint.current.value,"Time":dateTime});
     setComments(temp);
     console.log(focusPoint.current.value);
     console.log("comments,",comments);
-    var result = putComment();
+    var result = handleComment();
     console.log('posting result:',result);
     refetch();
   };
 
+   //Clicking to delete
+   const handeClickDelete = (key) => {
+      const temp = [...comments];
+      temp.splice(key,1);
+      setComments(temp);
+      console.log("key = ",key);
+      console.log("clicking comments ",comments);
+   }
+ 
   //get backend comment data
   const getComments = async () => await (await fetch(`http://localhost:5000/comments`)).json();
   const { data, isLoading, error, refetch } = useQuery(
     'history comments',
     getComments,
   );
-  //post to backend
-  const newComment =  {
-    method: 'POST', 
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({comment:"new value"}) 
+  const handleComment = () => {
+    //post to backend
+    const newComment =  {
+      method: 'POST', 
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({comment: focusPoint.current.value }) 
+    }
+    //upload purchase info to backend
+    const putComment = async() => (await fetch(`http://localhost:5000/comments`, newComment)).json();
+    return putComment();
   }
 
-  //upload purchase info to backend
-  const putComment = async() => (await fetch(`http://localhost:5000/comments`, newComment)).json()
-
-  console.log("comments data:",data)
+  console.log("comments data:",data);
 
   return (
       <>
@@ -74,7 +85,7 @@ export const AddComments = () =>{
      <hr />
     <label>UseRef</label>
     {comments && comments.map((value,key)=>
-        <div key={key}>
+        <div style={{backgroundColor:'red'}} key={key} onClick={()=>handeClickDelete(key)}>
             <p >Time:{value.Time}</p>
             <p >Comments:{value.Comments}</p>
         </div> 
